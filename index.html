@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos // Global Time & Intelligence Suite</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tailwind Customization -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#060709',
+                            900: '#0b0d12',
+                            800: '#121620',
+                            700: '#1b2230',
+                            600: '#273248',
+                        }
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.8' },
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        },
+                        fadeIn: {
+                            from: { opacity: '0', transform: 'translateY(8px)' },
+                            to: { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 4s ease-in-out infinite',
+                        'float-slow': 'floatSlow 6s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars & smooth interactions */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0d12; }
+        ::-webkit-scrollbar-thumb { background: #273248; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b4d6e; }
+        
+        .glass-panel {
+            background: rgba(18, 22, 32, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        .glass-panel-hover {
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-panel-hover:hover {
+            background: rgba(27, 34, 48, 0.8);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Custom range slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #1b2230;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #60a5fa;
+        }
+		
+		/* ===== Light mode, drag styling and mobile fixes ===== */
+        html.dark { color-scheme: dark; }
+        html:not(.dark) { color-scheme: light; }
+        html, body { overflow-x: hidden; }
+
+        html:not(.dark) body { background-color: #eef1f5; color: #121a26; }
+        html:not(.dark) [class*="bg-dark-"] { background-color: #ffffff !important; }
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(15, 25, 40, 0.12);
+        }
+        html:not(.dark) .glass-panel-hover:hover {
+            background: #ffffff;
+            border-color: rgba(15, 25, 40, 0.25);
+            box-shadow: 0 12px 30px -12px rgba(15, 25, 40, 0.25);
+        }
+        html:not(.dark) [class*="border-white"] { border-color: rgba(15, 25, 40, 0.12) !important; }
+
+        html:not(.dark) h2.text-white,
+        html:not(.dark) h3.text-white,
+        html:not(.dark) div.text-white,
+        html:not(.dark) input.text-white,
+        html:not(.dark) select.text-white { color: #121a26 !important; }
+        html:not(.dark) .text-slate-100,
+        html:not(.dark) .text-slate-200,
+        html:not(.dark) .text-slate-300 { color: #1f2a3a !important; }
+        html:not(.dark) .text-slate-400,
+        html:not(.dark) .text-slate-500 { color: #556071 !important; }
+        html:not(.dark) .text-blue-400,
+        html:not(.dark) .text-blue-300 { color: #1d5fd1 !important; }
+        html:not(.dark) .text-emerald-400 { color: #0f7a58 !important; }
+        html:not(.dark) .text-amber-400 { color: #b45309 !important; }
+        html:not(.dark) .text-indigo-300,
+        html:not(.dark) .text-indigo-400 { color: #4f46a5 !important; }
+        html:not(.dark) .bg-clip-text {
+            background-image: none !important;
+            -webkit-text-fill-color: #121a26;
+        }
+        html:not(.dark) [class*="from-blue-950"] {
+            background-image: none !important;
+            background-color: #e8f0ff !important;
+        }
+        html:not(.dark) input[type=range]::-webkit-slider-runnable-track { background: #d5dbe5; }
+
+        /* Drag and drop */
+        .dragging { opacity: 0.4; }
+        .drop-target { outline: 2px dashed #3b82f6; outline-offset: 2px; }
+
+        @media (max-width: 640px) {
+            #timezone-select { max-width: calc(100vw - 4.5rem); }
+        }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-blue-500 selection:text-white pb-24">
+
+    <!-- Ambient background glow elements -->
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-glow"></div>
+    <div class="fixed bottom-10 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" style="animation-delay: 2s;"></div>
+
+    <!-- Header / Navigation -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-white/5 px-6 lg:px-12 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <i data-lucide="globe-2" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <span class="font-bold tracking-tight text-lg bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">CHRONOS</span>
+                <span class="text-xs uppercase tracking-widest text-blue-400 font-mono block -mt-1 font-semibold">Global Suite</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Live UTC Clock -->
+            <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-dark-900/80 border border-white/5 font-mono text-xs text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="utc-clock">UTC 00:00:00</span>
+            </div>
+
+            <!-- Theme toggle -->
+            <button id="theme-btn" type="button" aria-label="Switch between light and dark mode" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-dark-800 hover:bg-dark-700 border border-white/10 text-slate-200 text-sm transition-all">
+                <span id="theme-icon" aria-hidden="true">☾</span>
+                <span id="theme-label" class="hidden md:inline">Dark</span>
+            </button>
+			
+			<!-- Quick Jump Button -->
+            <button onclick="addCurrentLocationZone()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                <i data-lucide="locate-fixed" class="w-4 h-4"></i>
+                <span class="hidden md:inline">Add My Timezone</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
+
+        <!-- SECTION 1: WORLD MAP & DAY/NIGHT TERMINATOR SIMULATOR -->
+        <section class="glass-panel rounded-2xl p-6 relative overflow-hidden animate-fade-in">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-semibold tracking-tight text-white flex items-center gap-2">
+                        <i data-lucide="map" class="w-5 h-5 text-blue-400"></i>
+                        Solar Terminator & World Map
+                    </h2>
+                    <p class="text-xs text-slate-400">Visualizing daylight and night distribution across Earth in real-time.</p>
+                </div>
+                <div class="flex items-center gap-3 text-xs font-mono">
+                    <span class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <i data-lucide="sun" class="w-3.5 h-3.5"></i> Daylight
+                    </span>
+                    <span class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                        <i data-lucide="moon" class="w-3.5 h-3.5"></i> Night
+                    </span>
+                </div>
+            </div>
+
+            <!-- World map (drawn on a canvas by the script) -->
+            <div class="relative w-full bg-dark-900 rounded-xl overflow-hidden border border-white/5">
+                <canvas id="map" class="block w-full"></canvas>
+
+                <div class="hidden sm:flex absolute bottom-3 left-4 px-3 py-1.5 rounded-lg bg-dark-950/80 backdrop-blur border border-white/10 text-xs font-mono text-slate-300 items-center gap-2">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-blue-400"></i>
+                    <span>Day and night update with the real position of the sun</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: MULTI-ZONE COMPARISON & LIVE CLOCKS -->
+        <section class="space-y-6 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold tracking-tight text-white flex items-center gap-2">
+                        <i data-lucide="layout-grid" class="w-5 h-5 text-blue-400"></i>
+                        Active Time Zones Board
+                    </h2>
+                    <p class="text-xs text-slate-400">Compare multiple cities instantly. Add, remove, or reorder zones.</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Add Zone Dropdown / Modal Trigger -->
+                    <div class="relative">
+                        <select id="timezone-select" onchange="addSelectedTimezone(this)" class="appearance-none bg-dark-800 hover:bg-dark-700 text-slate-200 text-xs font-medium px-4 py-2.5 pr-10 rounded-xl border border-white/10 cursor-pointer transition-all focus:outline-none focus:border-blue-500">
+                            <option value="" disabled selected>+ Add another time zone...</option>
+                            <!-- Populated via JS -->
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timezone Cards Grid -->
+            <div id="zones-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Cards rendered dynamically via JS -->
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: ADVANCED MEETING PLANNER & TIME RANGE COMPARISON -->
+        <section class="glass-panel rounded-2xl p-6 lg:p-8 space-y-6 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/5 pb-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium font-mono mb-2 border border-blue-500/20">
+                        <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Interactive Meeting Matrix
+                    </div>
+                    <h2 class="text-xl font-bold tracking-tight text-white">Find Optimal Overlapping Hours</h2>
+                    <p class="text-sm text-slate-400">Drag the slider to preview times simultaneously across all active time zones. Instantly highlights working hours (9 AM - 6 PM).</p>
+                </div>
+                
+                <div class="flex items-center gap-3 bg-dark-900 p-2 rounded-xl border border-white/10">
+                    <div class="text-right">
+                        <div id="planner-display-date" class="text-xs font-semibold text-white font-mono">Today, Oct 12</div>
+                        <div id="planner-display-time" class="text-lg font-bold text-blue-400 font-mono">12:00 PM</div>
+                    </div>
+                    <button onclick="resetPlannerToNow()" title="Reset to Current Time" class="p-2 rounded-lg bg-dark-800 hover:bg-dark-700 text-slate-300 transition-colors">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Working hours settings -->
+            <div class="flex flex-wrap items-end gap-3">
+                <div>
+                    <label for="wh-start" class="block text-xs font-medium text-slate-400 mb-1.5 font-mono">WORKING DAY STARTS</label>
+                    <input id="wh-start" type="time" class="bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="wh-end" class="block text-xs font-medium text-slate-400 mb-1.5 font-mono">WORKING DAY ENDS</label>
+                    <input id="wh-end" type="time" class="bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                </div>
+                <button id="wh-reset" type="button" class="px-4 py-2.5 rounded-xl bg-dark-800 hover:bg-dark-700 border border-white/10 text-slate-200 text-sm transition-colors">Reset to 9 AM - 6 PM</button>
+            </div>
+            <p class="text-xs text-slate-500">Drag the rows below to change their order. The first row sets the clock for the slider.</p>
+			
+			<!-- Range Slider Control -->
+            <div class="space-y-3 pt-2">
+                <div class="hidden sm:flex justify-between text-xs font-mono text-slate-400">
+                    <span>12:00 AM (Midnight)</span>
+                    <span>06:00 AM</span>
+                    <span>12:00 PM (Noon)</span>
+                    <span>06:00 PM</span>
+                    <span>11:59 PM</span>
+                </div>
+                <input id="time-slider" type="range" min="0" max="1439" value="720" step="1" oninput="onSliderChange(this.value)" class="w-full">
+            </div>
+
+            <!-- Planner Rows Container -->
+            <div id="planner-rows" class="space-y-3 pt-4">
+                <!-- Rows populated via JS -->
+            </div>
+        </section>
+
+
+        <!-- SECTION 4: UNIVERSAL TIME CONVERTER & DATE MATH -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in" style="animation-delay: 0.3s;">
+            <!-- Converter Card -->
+            <div class="glass-panel rounded-2xl p-6 space-y-5">
+                <h3 class="text-base font-semibold text-white flex items-center gap-2">
+                    <i data-lucide="repeat" class="w-4 h-4 text-blue-400"></i>
+                    Universal Time Converter
+                </h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 font-mono">SELECT SOURCE TIME & ZONE</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input type="datetime-local" id="conv-datetime" oninput="runConversion()" class="bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                            <select id="conv-from-zone" onchange="runConversion()" class="bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center">
+                        <div class="w-8 h-8 rounded-full bg-dark-800 border border-white/10 flex items-center justify-center text-blue-400">
+                            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 font-mono">CONVERT TO TARGET ZONE</label>
+                        <select id="conv-to-zone" onchange="runConversion()" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Conversion Result Box -->
+                    <div id="conversion-result" class="p-4 rounded-xl bg-gradient-to-r from-blue-950/40 to-indigo-950/40 border border-blue-500/20 text-center space-y-1">
+                        <div class="text-xs uppercase tracking-wider text-blue-400 font-mono">Converted Result</div>
+                        <div id="conv-result-time" class="text-xl font-bold font-mono text-white">—</div>
+                        <div id="conv-result-date" class="text-xs text-slate-300">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Difference & Offset Calculator -->
+            <div class="glass-panel rounded-2xl p-6 space-y-5">
+                <h3 class="text-base font-semibold text-white flex items-center gap-2">
+                    <i data-lucide="diff" class="w-4 h-4 text-blue-400"></i>
+                    Time Gap & Difference Analyzer
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1.5 font-mono">ZONE A (BASE)</label>
+                            <select id="diff-zone-a" onchange="calculateDifference()" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1.5 font-mono">ZONE B (TARGET)</label>
+                            <select id="diff-zone-b" onchange="calculateDifference()" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="diff-result-box" class="p-5 rounded-xl bg-dark-900 border border-white/10 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400 font-mono">TIME DIFFERENCE</span>
+                            <span id="diff-hours-badge" class="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-mono font-semibold">+0 Hours</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                            <div>
+                                <div class="text-[10px] text-slate-500 font-mono uppercase">Zone A Current</div>
+                                <div id="diff-time-a" class="text-sm font-bold font-mono text-white mt-0.5">—</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-500 font-mono uppercase">Zone B Current</div>
+                                <div id="diff-time-b" class="text-sm font-bold font-mono text-white mt-0.5">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-dark-900/50 border border-white/5 text-xs text-slate-400 flex items-start gap-3">
+                        <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+                        <span>DST (Daylight Saving Time) rules are automatically calculated according to the IANA time zone database embedded in your browser.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* ===================== Setup ===================== */
+        const $ = id => document.getElementById(id);
+        const root = document.documentElement;
+
+        const store = {
+            get(key, fallback) {
+                try {
+                    const value = localStorage.getItem(key);
+                    return value ? JSON.parse(value) : fallback;
+                } catch (e) {
+                    return fallback;
+                }
+            },
+            set(key, value) {
+                try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+            }
+        };
+
+        const DEFAULT_ZONES = ['Africa/Lagos', 'America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
+        const DEFAULT_HOURS = { start: 540, end: 1080 };
+
+        const NAMES = {
+            'Africa/Lagos': ['Nigeria', 'Lagos and Port Harcourt'],
+            'UTC': ['UTC', 'Coordinated Universal Time']
+        };
+
+        /* Map pin positions: [latitude, longitude] */
+        const COORDS = {
+            'Africa/Lagos': [4.8, 7.0], 'America/New_York': [40.7, -74], 'America/Chicago': [41.9, -87.6],
+            'America/Denver': [39.7, -105], 'America/Los_Angeles': [34, -118.2], 'America/Sao_Paulo': [-23.5, -46.6],
+            'America/Argentina/Buenos_Aires': [-34.6, -58.4], 'Europe/London': [51.5, -0.1], 'Europe/Paris': [48.9, 2.3],
+            'Europe/Berlin': [52.5, 13.4], 'Europe/Athens': [37.98, 23.7], 'Europe/Moscow': [55.8, 37.6],
+            'Africa/Cairo': [30, 31.2], 'Africa/Nairobi': [-1.3, 36.8], 'Africa/Johannesburg': [-26.2, 28],
+            'Asia/Dubai': [25.2, 55.3], 'Asia/Kolkata': [28.6, 77.2], 'Asia/Bangkok': [13.75, 100.5],
+            'Asia/Singapore': [1.35, 103.8], 'Asia/Shanghai': [31.2, 121.5], 'Asia/Tokyo': [35.7, 139.7],
+            'Asia/Seoul': [37.6, 127], 'Australia/Sydney': [-33.9, 151.2], 'Pacific/Auckland': [-36.8, 174.8],
+            'Pacific/Honolulu': [21.3, -157.9], 'America/Anchorage': [61.2, -149.9]
+        };
+
+        let activeZones = store.get('chronos-zones', DEFAULT_ZONES);
+        let workHours = store.get('chronos-hours', DEFAULT_HOURS);
+        let plannerMinutes = 720;
+        let ZONE_LIST = [];
+        let ZONE_BY_ID = {};
+
+        /* ===================== Time helpers ===================== */
+        const fmtCache = {};
+        function formatter(tz, key, options) {
+            const id = tz + '|' + key;
+            if (!fmtCache[id]) fmtCache[id] = new Intl.DateTimeFormat('en-US', { timeZone: tz, ...options });
+            return fmtCache[id];
+        }
+
+        function isValidZone(tz) {
+            try { formatter(tz, 'v', {}).format(0); return true; } catch (e) { return false; }
+        }
+
+        function offsetMinutes(tz, date) {
+            const part = formatter(tz, 'off', { timeZoneName: 'longOffset' })
+                .formatToParts(date).find(p => p.type === 'timeZoneName');
+            const match = part && part.value.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+            if (!match) return 0;
+            return (match[1] === '-' ? -1 : 1) * (Number(match[2]) * 60 + Number(match[3] || 0));
+        }
+
+        function minuteOfDay(date, tz) {
+            const parts = formatter(tz, 'hm', { hour: 'numeric', minute: 'numeric', hourCycle: 'h23' }).formatToParts(date);
+            const get = type => Number(parts.find(p => p.type === type).value);
+            return (get('hour') % 24) * 60 + get('minute');
+        }
+
+        function ymd(date, tz) {
+            const parts = formatter(tz, 'ymd', { year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(date);
+            const get = type => Number(parts.find(p => p.type === type).value);
+            return { y: get('year'), m: get('month'), d: get('day') };
+        }
+
+        /* Turns a wall-clock time in a given zone into a real moment (ms) */
+        function wallToUtc(tz, y, m, d, h, min) {
+            const guess = Date.UTC(y, m - 1, d, h, min);
+            const first = guess - offsetMinutes(tz, new Date(guess)) * 60000;
+            return guess - offsetMinutes(tz, new Date(first)) * 60000;
+        }
+
+        function fmtTime(date, tz, withSeconds) {
+            return formatter(tz, 't' + !!withSeconds, {
+                hour: 'numeric', minute: '2-digit', second: withSeconds ? '2-digit' : undefined
+            }).format(date);
+        }
+
+        function fmtDate(date, tz) {
+            return formatter(tz, 'd', { weekday: 'short', month: 'short', day: 'numeric' }).format(date);
+        }
+
+        function fmtClock(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+        }
+
+        function fmtOffset(mins) {
+            const sign = mins < 0 ? '-' : '+';
+            const abs = Math.abs(mins);
+            return 'UTC' + sign + String(Math.floor(abs / 60)).padStart(2, '0') + ':' + String(abs % 60).padStart(2, '0');
+        }
+
+        function durationText(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            const parts = [];
+            if (h) parts.push(h + (h === 1 ? ' hour' : ' hours'));
+            if (m) parts.push(m + (m === 1 ? ' minute' : ' minutes'));
+            return parts.join(' ');
+        }
+
+        function refreshIcons() {
+            if (window.lucide) lucide.createIcons();
+        }
+
+        /* ===================== Zone list ===================== */
+        function makeZone(id) {
+            const names = NAMES[id];
+            const segments = id.split('/');
+            return {
+                id: id,
+                city: names ? names[0] : segments[segments.length - 1].replace(/_/g, ' '),
+                sub: names ? names[1] : segments[0].replace(/_/g, ' '),
+                offset: offsetMinutes(id, new Date())
+            };
+        }
+
+        function buildZoneList() {
+            let ids = typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
+            ids = Array.from(new Set(ids.concat(['UTC'], DEFAULT_ZONES)));
+            ZONE_LIST = ids.filter(isValidZone).map(makeZone);
+            /* Sort by UTC offset (negative to positive), then alphabetically */
+            ZONE_LIST.sort((a, b) => a.offset - b.offset || a.city.localeCompare(b.city) || a.id.localeCompare(b.id));
+            ZONE_BY_ID = {};
+            ZONE_LIST.forEach(z => { ZONE_BY_ID[z.id] = z; });
+        }
+
+        function zoneInfo(id) {
+            if (!ZONE_BY_ID[id]) ZONE_BY_ID[id] = makeZone(id);
+            return ZONE_BY_ID[id];
+        }
+
+        function initSelectDropdowns() {
+            ['timezone-select', 'conv-from-zone', 'conv-to-zone', 'diff-zone-a', 'diff-zone-b'].forEach(selectId => {
+                const el = $(selectId);
+                const keep = el.firstElementChild && el.firstElementChild.disabled ? el.firstElementChild.outerHTML : '';
+                el.innerHTML = keep;
+                ZONE_LIST.forEach(z => {
+                    const option = document.createElement('option');
+                    option.value = z.id;
+                    option.textContent = fmtOffset(z.offset) + '   ' + z.city + ' (' + z.sub + ')';
+                    el.appendChild(option);
+                });
+            });
+            $('conv-from-zone').value = activeZones[0];
+            $('conv-to-zone').value = ZONE_BY_ID['America/New_York'] ? 'America/New_York' : activeZones[0];
+            $('diff-zone-a').value = activeZones[0];
+            $('diff-zone-b').value = ZONE_BY_ID['America/New_York'] ? 'America/New_York' : activeZones[0];
+            calculateDifference();
+        }
+
+        /* ===================== Active zones ===================== */
+        function saveZones() { store.set('chronos-zones', activeZones); }
+
+        function renderAll() {
+            renderZonesGrid();
+            renderPlannerRows();
+            drawMap();
+        }
+
+        function moveZone(from, to) {
+            if (from < 0 || to < 0 || from === to) return;
+            activeZones.splice(to, 0, activeZones.splice(from, 1)[0]);
+            saveZones();
+            renderAll();
+        }
+
+        function addCurrentLocationZone() {
+            const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (local && isValidZone(local) && !activeZones.includes(local)) {
+                activeZones.unshift(local);
+                saveZones();
+                renderAll();
+            }
+        }
+
+        function addSelectedTimezone(selectEl) {
+            const value = selectEl.value;
+            if (value && !activeZones.includes(value)) {
+                activeZones.push(value);
+                saveZones();
+                renderAll();
+            }
+            selectEl.selectedIndex = 0;
+        }
+
+        function removeZone(zoneId) {
+            if (activeZones.length <= 1) {
+                alert('You must keep at least one time zone active.');
+                return;
+            }
+            activeZones = activeZones.filter(z => z !== zoneId);
+            saveZones();
+            renderAll();
+        }
+
+        function renderZonesGrid() {
+            const grid = $('zones-grid');
+            grid.innerHTML = '';
+            activeZones.forEach(id => {
+                const z = zoneInfo(id);
+                const card = document.createElement('div');
+                card.className = 'glass-panel glass-panel-hover rounded-2xl p-5 relative flex flex-col justify-between space-y-4 cursor-grab';
+                card.draggable = true;
+                card.dataset.tz = id;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[10px] font-mono tracking-widest uppercase text-blue-400 font-semibold">${z.sub}</span>
+                            <h3 class="text-base font-bold text-white">${z.city}</h3>
+                            <p class="text-xs text-slate-400 truncate max-w-[200px]">${id}</p>
+                        </div>
+                        <button onclick="removeZone('${id}')" class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-dark-800 transition-colors" title="Remove zone">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-1 py-2">
+                        <div data-role="time" class="text-3xl font-bold font-mono tracking-tight text-white">--</div>
+                        <div class="flex items-center justify-between text-xs font-mono text-slate-300">
+                            <span data-role="date"></span>
+                            <span data-role="offset" class="px-2 py-0.5 rounded bg-dark-800 text-blue-300 text-[10px] border border-white/5"></span>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                        <span data-role="state"></span>
+                        <span class="font-mono text-[10px] text-slate-500">Drag to reorder</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            refreshIcons();
+            updateClocks();
+        }
+
+        function updateClocks() {
+            const now = new Date();
+            $('utc-clock').textContent = 'UTC ' + formatter('UTC', 'u', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+            }).format(now);
+
+            document.querySelectorAll('#zones-grid [data-tz]').forEach(card => {
+                const tz = card.dataset.tz;
+                const q = role => card.querySelector('[data-role="' + role + '"]');
+                const mins = minuteOfDay(now, tz);
+                q('time').textContent = fmtTime(now, tz, true);
+                q('date').textContent = fmtDate(now, tz);
+                q('offset').textContent = fmtOffset(offsetMinutes(tz, now));
+                q('state').innerHTML = mins >= 360 && mins < 1080
+                    ? '<span class="text-amber-400">&#9728;</span> Daytime'
+                    : '<span class="text-indigo-300">&#9790;</span> Nighttime';
+            });
+            calculateDifference();
+        }
+
+        /* ===================== Drag and drop (cards and planner rows) ===================== */
+        function enableSort(container) {
+            let dragId = null;
+            const clearMarks = () => container.querySelectorAll('.dragging, .drop-target')
+                .forEach(el => el.classList.remove('dragging', 'drop-target'));
+
+            container.addEventListener('dragstart', e => {
+                const item = e.target.closest('[data-tz]');
+                if (!item) return;
+                dragId = item.dataset.tz;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', dragId);
+            });
+            container.addEventListener('dragover', e => {
+                const item = e.target.closest('[data-tz]');
+                if (!item || !dragId) return;
+                e.preventDefault();
+                container.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
+                item.classList.add('drop-target');
+            });
+            container.addEventListener('drop', e => {
+                const item = e.target.closest('[data-tz]');
+                if (!item || !dragId) return;
+                e.preventDefault();
+                moveZone(activeZones.indexOf(dragId), activeZones.indexOf(item.dataset.tz));
+                dragId = null;
+            });
+            container.addEventListener('dragend', () => {
+                dragId = null;
+                clearMarks();
+            });
+        }
+
+        /* ===================== Meeting planner ===================== */
+        function isWorking(mins) {
+            return workHours.start < workHours.end
+                ? mins >= workHours.start && mins < workHours.end
+                : mins >= workHours.start || mins < workHours.end;
+        }
+
+        /* Start of today in the first zone: the slider counts minutes from here */
+        function anchorBase() {
+            const tz = activeZones[0];
+            const d = ymd(new Date(), tz);
+            return wallToUtc(tz, d.y, d.m, d.d, 0, 0);
+        }
+
+        function onSliderChange(value) {
+            plannerMinutes = parseInt(value, 10);
+            updatePlannerState();
+        }
+
+        function resetPlannerToNow() {
+            plannerMinutes = minuteOfDay(new Date(), activeZones[0]);
+            $('time-slider').value = plannerMinutes;
+            updatePlannerState();
+        }
+
+        function renderPlannerRows() {
+            const container = $('planner-rows');
+            container.innerHTML = '';
+            activeZones.forEach((id, index) => {
+                const z = zoneInfo(id);
+                const row = document.createElement('div');
+                row.className = 'p-4 rounded-xl bg-dark-900 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-white/10 cursor-grab';
+                row.draggable = true;
+                row.dataset.tz = id;
+                row.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0 sm:min-w-[200px]">
+                        <div class="w-8 h-8 shrink-0 rounded-lg bg-dark-800 flex items-center justify-center font-mono text-xs text-blue-400 font-bold border border-white/5">${index + 1}</div>
+                        <div class="min-w-0">
+                            <div class="text-sm font-bold text-white">${z.city}</div>
+                            <div class="text-xs text-slate-400 truncate">${z.sub}</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex items-center justify-between sm:justify-end gap-4 sm:gap-6">
+                        <div class="text-left sm:text-right font-mono">
+                            <div data-role="pt" class="text-base font-bold text-white">--</div>
+                            <div data-role="pd" class="text-xs text-slate-400"></div>
+                        </div>
+                        <div data-role="pb" class="px-3 py-1 rounded-lg text-xs font-mono font-medium border">--</div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            updatePlannerState();
+        }
+
+        function updatePlannerState() {
+            const anchor = zoneInfo(activeZones[0]);
+            const target = new Date(anchorBase() + plannerMinutes * 60000);
+            $('planner-display-time').textContent = fmtClock(plannerMinutes);
+            $('planner-display-date').textContent = fmtDate(target, anchor.id) + ' (' + anchor.city + ')';
+
+            document.querySelectorAll('#planner-rows [data-tz]').forEach(row => {
+                const tz = row.dataset.tz;
+                const q = role => row.querySelector('[data-role="' + role + '"]');
+                const mins = minuteOfDay(target, tz);
+                q('pt').textContent = fmtTime(target, tz);
+                q('pd').textContent = fmtDate(target, tz);
+                const badge = q('pb');
+                if (isWorking(mins)) {
+                    badge.className = 'px-3 py-1 rounded-lg text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    badge.textContent = 'Working Hours';
+                } else if (mins < 360 || mins >= 1320) {
+                    badge.className = 'px-3 py-1 rounded-lg text-xs font-mono font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20';
+                    badge.textContent = 'Nighttime';
+                } else {
+                    badge.className = 'px-3 py-1 rounded-lg text-xs font-mono font-medium bg-dark-800 text-slate-400 border border-white/5';
+                    badge.textContent = 'Off Hours';
+                }
+            });
+        }
+
+        /* Working hours settings */
+        function toTimeValue(mins) {
+            return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0');
+        }
+
+        function syncHourInputs() {
+            $('wh-start').value = toTimeValue(workHours.start);
+            $('wh-end').value = toTimeValue(workHours.end);
+        }
+
+        function onHoursChange() {
+            const start = $('wh-start').value;
+            const end = $('wh-end').value;
+            if (!start || !end) return;
+            const toMins = v => Number(v.split(':')[0]) * 60 + Number(v.split(':')[1]);
+            workHours = { start: toMins(start), end: toMins(end) };
+            store.set('chronos-hours', workHours);
+            updatePlannerState();
+        }
+
+        /* ===================== Converter and time gap ===================== */
+        function initConverterDefaults() {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            $('conv-datetime').value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) +
+                'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+            runConversion();
+        }
+
+        function runConversion() {
+            const value = $('conv-datetime').value;
+            const from = $('conv-from-zone').value;
+            const to = $('conv-to-zone').value;
+            if (!value || !from || !to) return;
+            const [datePart, timePart] = value.split('T');
+            const [y, m, d] = datePart.split('-').map(Number);
+            const [h, min] = timePart.split(':').map(Number);
+            const moment = new Date(wallToUtc(from, y, m, d, h, min));
+            $('conv-result-time').textContent = fmtTime(moment, to);
+            $('conv-result-date').textContent = formatter(to, 'full', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            }).format(moment);
+        }
+
+        function calculateDifference() {
+            const idA = $('diff-zone-a').value;
+            const idB = $('diff-zone-b').value;
+            if (!idA || !idB) return;
+            const a = zoneInfo(idA);
+            const b = zoneInfo(idB);
+            const now = new Date();
+            const diff = offsetMinutes(idB, now) - offsetMinutes(idA, now);
+
+            $('diff-time-a').textContent = a.city + ': ' + fmtTime(now, idA);
+            $('diff-time-b').textContent = b.city + ': ' + fmtTime(now, idB);
+
+            const badge = $('diff-hours-badge');
+            badge.className = 'ml-3 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-mono font-semibold text-right';
+            if (diff === 0) {
+                badge.textContent = b.city + ' and ' + a.city + ' are on the same time';
+            } else {
+                badge.textContent = b.city + ' is ' + durationText(Math.abs(diff)) +
+                    (diff > 0 ? ' ahead of ' : ' behind ') + a.city;
+            }
+        }
+
+        /* ===================== World map ===================== */
+        const POLYGONS = [
+            /* North America */ [-168,66,-162,70,-140,70,-125,70,-95,72,-80,68,-62,60,-56,52,-66,45,-70,42,-76,35,-81,31,-80,25,-83,29,-90,30,-97,26,-97,20,-91,18,-88,21,-83,10,-78,8,-86,13,-95,16,-105,20,-110,24,-112,31,-117,32,-124,40,-124,48,-135,58,-150,60,-165,55,-158,58],
+            /* Greenland */ [-72,78,-55,82,-25,82,-20,72,-42,60,-52,66,-60,76],
+            /* South America */ [-78,8,-72,12,-62,10,-50,0,-35,-6,-39,-15,-48,-26,-58,-38,-65,-42,-68,-52,-72,-52,-74,-42,-71,-30,-70,-18,-76,-14,-81,-5,-80,0],
+            /* Eurasia */ [-9,37,-9,43,-2,44,-4,48,2,51,8,54,10,57,5,60,5,62,14,68,25,71,40,68,60,69,70,73,100,77,115,74,140,72,160,70,180,68,180,65,170,60,162,57,156,51,140,54,135,45,130,42,127,37,121,40,122,31,120,25,110,20,106,10,100,13,100,3,104,1,98,8,94,17,90,22,80,15,77,8,73,18,67,25,57,25,50,30,48,29,56,26,60,22,52,16,44,12,35,28,34,31,36,36,27,37,26,40,23,38,19,40,12,44,16,38,10,44,3,43,-5,36],
+            /* Africa */ [-17,21,-10,30,-6,36,10,37,11,33,20,32,32,31,35,28,43,12,51,12,40,-3,40,-15,35,-24,32,-29,20,-35,17,-30,12,-17,13,-8,9,-1,9,4,-8,4,-17,14],
+            /* Australia */ [114,-22,122,-18,130,-12,137,-12,142,-11,146,-19,153,-26,150,-37,141,-38,135,-34,116,-35,114,-26],
+            /* Britain */ [-5,50,1,51,-2,56,-5,58,-6,54],
+            /* Iceland */ [-24,64,-14,65,-18,63],
+            /* Japan */ [130,31,135,34,141,38,142,45,140,41,132,35],
+            /* Borneo */ [109,1,117,7,119,1,116,-4,110,-3],
+            /* Sumatra */ [95,5,104,-2,106,-6,100,-1],
+            /* New Guinea */ [131,-1,141,-3,150,-10,141,-9],
+            /* Madagascar */ [44,-25,50,-15,49,-12,44,-17],
+            /* New Zealand */ [172,-34,178,-38,174,-41,172,-44,167,-46,170,-41]
+        ];
+
+        const STEP = 2.5, COLS = 144, ROWS = 57, TOP_LAT = 84, SPAN = 142;
+        const LAND = new Uint8Array(COLS * ROWS);
+
+        function insidePolygon(lon, lat, flat) {
+            let inside = false;
+            const n = flat.length / 2;
+            for (let i = 0, j = n - 1; i < n; j = i++) {
+                const xi = flat[i * 2], yi = flat[i * 2 + 1], xj = flat[j * 2], yj = flat[j * 2 + 1];
+                if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside;
+            }
+            return inside;
+        }
+
+        function buildLandMask() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const lon = -180 + (c + 0.5) * STEP;
+                    const lat = TOP_LAT - (r + 0.5) * STEP;
+                    LAND[r * COLS + c] = POLYGONS.some(p => insidePolygon(lon, lat, p)) ? 1 : 0;
+                }
+            }
+        }
+
+        function drawMap() {
+            const canvas = $('map');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.parentElement.clientWidth;
+            const h = Math.round(w * SPAN / 360);
+            canvas.style.height = h + 'px';
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const dark = root.classList.contains('dark');
+            const landColor = dark ? '#c9d3e3' : '#26364f';
+            const oceanColor = dark ? '#5d6f8f' : '#7c8aa3';
+            const lineColor = dark ? '#f4b546' : '#e0900f';
+            const textColor = dark ? '#e8edf4' : '#121a26';
+
+            /* Position of the sun */
+            const now = new Date();
+            const startOfYear = Date.UTC(now.getUTCFullYear(), 0, 0);
+            const dayOfYear = (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - startOfYear) / 86400000;
+            const rad = Math.PI / 180;
+            const dec = -23.44 * Math.cos(2 * Math.PI / 365 * (dayOfYear + 10)) * rad;
+            const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+            const sunLon = (12 - utcHours) * 15;
+            const dot = w / COLS * 0.3;
+
+            for (let r = 0; r < ROWS; r++) {
+                const lat = TOP_LAT - (r + 0.5) * STEP;
+                const y = (TOP_LAT - lat) / SPAN * h;
+                for (let c = 0; c < COLS; c++) {
+                    const lon = -180 + (c + 0.5) * STEP;
+                    const sinAlt = Math.sin(lat * rad) * Math.sin(dec) +
+                        Math.cos(lat * rad) * Math.cos(dec) * Math.cos((lon - sunLon) * rad);
+                    const isLand = LAND[r * COLS + c] === 1;
+                    const edge = Math.abs(sinAlt) < 0.045;
+                    ctx.globalAlpha = edge ? 0.95 : isLand ? (sinAlt > 0 ? 0.95 : 0.3) : (sinAlt > 0 ? 0.22 : 0.08);
+                    ctx.fillStyle = edge ? lineColor : isLand ? landColor : oceanColor;
+                    ctx.beginPath();
+                    ctx.arc((c + 0.5) / COLS * w, y, isLand ? dot * 1.15 : dot * 0.8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            /* City pins for the active zones */
+            ctx.globalAlpha = 1;
+            ctx.font = '500 11px "JetBrains Mono", monospace';
+            activeZones.forEach(id => {
+                const pos = COORDS[id];
+                if (!pos) return;
+                const x = (pos[1] + 180) / 360 * w;
+                const y = (TOP_LAT - pos[0]) / SPAN * h;
+                ctx.fillStyle = '#3b82f6';
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = textColor;
+                const flip = x > w * 0.85;
+                ctx.textAlign = flip ? 'right' : 'left';
+                ctx.fillText(zoneInfo(id).city, x + (flip ? -10 : 10), y + 4);
+            });
+        }
+
+        /* ===================== Theme ===================== */
+        function setTheme(theme) {
+            root.classList.toggle('dark', theme === 'dark');
+            store.set('chronos-theme', theme);
+            $('theme-icon').textContent = theme === 'dark' ? '\u263E' : '\u2600';
+            $('theme-label').textContent = theme === 'dark' ? 'Dark' : 'Light';
+            drawMap();
+        }
+
+        /* ===================== Start ===================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            activeZones = activeZones.filter(isValidZone);
+            if (!activeZones.length) activeZones = DEFAULT_ZONES.slice();
+
+            buildZoneList();
+            initSelectDropdowns();
+            syncHourInputs();
+            buildLandMask();
+            plannerMinutes = minuteOfDay(new Date(), activeZones[0]);
+            $('time-slider').value = plannerMinutes;
+
+            setTheme(store.get('chronos-theme', 'dark'));
+            renderAll();
+            initConverterDefaults();
+
+            enableSort($('zones-grid'));
+            enableSort($('planner-rows'));
+
+            $('theme-btn').addEventListener('click', () => setTheme(root.classList.contains('dark') ? 'light' : 'dark'));
+            $('wh-start').addEventListener('change', onHoursChange);
+            $('wh-end').addEventListener('change', onHoursChange);
+            $('wh-reset').addEventListener('click', () => {
+                workHours = { start: DEFAULT_HOURS.start, end: DEFAULT_HOURS.end };
+                store.set('chronos-hours', workHours);
+                syncHourInputs();
+                updatePlannerState();
+            });
+            window.addEventListener('resize', drawMap);
+
+            setInterval(updateClocks, 1000);
+            setInterval(drawMap, 60000);
+            refreshIcons();
+        });
+    </script>
+</body>
+</html>
