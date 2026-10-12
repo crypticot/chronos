@@ -260,6 +260,22 @@
 		/* Slightly lighter text weights */
         html .font-bold { font-weight: 500; }
         html .font-semibold { font-weight: 400; }
+		
+		 /* Globe controls */
+        .gbtn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(16, 21, 29, 0.85);
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .gbtn:hover { border-color: #3b82f6; }
+        .gbtn.on { background: #3b82f6; border-color: #3b82f6; color: #ffffff; }
+        html:not(.dark) .gbtn { background: rgba(255, 255, 255, 0.9); border-color: rgba(15, 25, 40, 0.15); color: #1f2a3a; }
+        html:not(.dark) .gbtn.on { background: #2563eb; border-color: #2563eb; color: #ffffff; }
     </style>
 </head>
 <body class="bg-dark-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-blue-500 selection:text-white pb-24">
@@ -308,9 +324,9 @@
                 <div>
                     <h2 class="text-lg font-semibold tracking-tight text-white flex items-center gap-2">
                         <i data-lucide="map" class="w-5 h-5 text-blue-400"></i>
-                        Solar Terminator & World Map
+                        World Globe
                     </h2>
-                    <p class="text-xs text-slate-400">Visualizing daylight and night distribution across Earth in real-time.</p>
+                    <p class="text-xs text-slate-400">Drag to turn the globe, click a place or pin to inspect it, and switch to Planner time to see where daylight falls at the time you picked.</p>
                 </div>
                 <div class="flex items-center gap-3 text-xs font-mono">
                     <span class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -322,18 +338,56 @@
                 </div>
             </div>
 
-            <!-- World map (drawn on a canvas by the script) -->
-            <div class="relative w-full bg-dark-900 rounded-2xl overflow-hidden border border-white/5">
-                <canvas id="map" class="block w-full"></canvas>
-                <div class="corner corner-tl"></div>
-                <div class="corner corner-tr"></div>
-                <div class="corner corner-bl"></div>
-                <div class="corner corner-br"></div>
-
-                <div class="hidden sm:flex absolute bottom-6 left-8 px-3 py-1.5 rounded-lg bg-dark-950/80 border border-white/10 text-xs font-mono text-slate-300 items-center gap-2">
-                    <i data-lucide="clock" class="w-3.5 h-3.5 text-blue-400"></i>
-                    <span>Day and night update with the real position of the sun</span>
+            <!-- Interactive globe -->
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <div class="flex gap-1">
+                    <button id="gb-live" type="button" class="gbtn on">Live now</button>
+                    <button id="gb-planner" type="button" class="gbtn">Planner time</button>
                 </div>
+                <button id="gb-spin" type="button" class="gbtn on">Auto-rotate</button>
+                <button id="gb-lines" type="button" class="gbtn on">Zone lines</button>
+                <button id="gb-sun" type="button" class="gbtn">Face the sun</button>
+                <button id="gb-home" type="button" class="gbtn">Face first zone</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
+                <div class="relative w-full bg-dark-900 rounded-2xl overflow-hidden border border-white/5 h-[380px] sm:h-[460px] lg:h-[540px]">
+                    <canvas id="globe" class="block w-full h-full" style="touch-action: pan-y; cursor: grab;"></canvas>
+                    <div id="globe-sun-note" class="absolute bottom-3 left-4 text-xs font-mono text-slate-400 pointer-events-none"></div>
+                </div>
+
+                <aside class="rounded-2xl border border-white/5 bg-dark-900 p-5 flex flex-col gap-4">
+                    <div>
+                        <div id="gp-mode" class="text-xs text-slate-400 font-mono mb-1">Showing live time</div>
+                        <h3 id="gp-name" class="text-lg font-bold text-white leading-tight">--</h3>
+                        <p id="gp-sub" class="text-xs text-slate-400">--</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-dark-800 border border-white/5">
+                        <div id="gp-time" class="text-3xl font-bold font-mono text-white">--</div>
+                        <div id="gp-date" class="text-xs text-slate-400 mt-1">--</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="p-3 rounded-xl bg-dark-800 border border-white/5">
+                            <div class="text-slate-500">UTC offset</div>
+                            <div id="gp-offset" class="font-mono font-bold text-white mt-1">--</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-dark-800 border border-white/5">
+                            <div class="text-slate-500">Working hours</div>
+                            <div id="gp-work" class="font-bold text-white mt-1">--</div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="gp-badge" class="inline-block px-3 py-1 rounded-full text-xs font-mono border">--</span>
+                        <span id="gp-sun" class="text-xs text-slate-400">--</span>
+                    </div>
+
+                    <button id="gp-add" type="button" class="hidden px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors">Add to my board</button>
+
+                    <p class="text-xs text-slate-500 mt-auto">The numbers along the equator show the UTC offset of each 15 degree band of longitude.</p>
+                </aside>
             </div>
         </section>
 
@@ -898,6 +952,7 @@
                     badge.textContent = 'Off Hours';
                 }
             });
+            if (globe.mode === 'planner') drawMap();
         }
 
         /* Working hours settings */
@@ -1007,69 +1062,586 @@
             }
         }
 
-        function drawMap() {
-            const canvas = $('map');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const w = canvas.parentElement.clientWidth;
-            const h = Math.round(w * SPAN / 360);
-            canvas.style.height = h + 'px';
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        /* ===================== Interactive globe ===================== */
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const RAD = Math.PI / 180;
+        const LABEL_FONT = '500 12px "IBM Plex Sans", Inter, system-ui, sans-serif';
 
-            const dark = root.classList.contains('dark');
-            const landColor = dark ? '#c9d3e3' : '#26364f';
-            const oceanColor = dark ? '#5d6f8f' : '#7c8aa3';
-            const lineColor = dark ? '#f4b546' : '#e0900f';
-            const textColor = dark ? '#e8edf4' : '#121a26';
+        const globe = {
+            canvas: null, ctx: null,
+            w: 0, h: 0, dpr: 1, r: 100,
+            lon0: 8, lat0: 18,            /* point at the centre of the view */
+            mode: 'live',                 /* 'live' or 'planner' */
+            spin: true, lines: true,
+            drag: null, target: null,
+            dots: [], pins: [],
+            selected: null,
+            visible: true, needsDraw: true,
+            lastDraw: 0, lastPanel: 0, lastFrame: 0
+        };
 
-            /* Position of the sun */
-            const now = new Date();
-            const startOfYear = Date.UTC(now.getUTCFullYear(), 0, 0);
-            const dayOfYear = (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - startOfYear) / 86400000;
-            const rad = Math.PI / 180;
-            const dec = -23.44 * Math.cos(2 * Math.PI / 365 * (dayOfYear + 10)) * rad;
-            const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
-            const sunLon = (12 - utcHours) * 15;
-            const dot = w / COLS * 0.3;
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
-            for (let r = 0; r < ROWS; r++) {
-                const lat = TOP_LAT - (r + 0.5) * STEP;
-                const y = (TOP_LAT - lat) / SPAN * h;
-                for (let c = 0; c < COLS; c++) {
-                    const lon = -180 + (c + 0.5) * STEP;
-                    const sinAlt = Math.sin(lat * rad) * Math.sin(dec) +
-                        Math.cos(lat * rad) * Math.cos(dec) * Math.cos((lon - sunLon) * rad);
-                    const isLand = LAND[r * COLS + c] === 1;
-                    const edge = Math.abs(sinAlt) < 0.045;
-                    ctx.globalAlpha = edge ? 0.95 : isLand ? (sinAlt > 0 ? 0.95 : 0.3) : (sinAlt > 0 ? 0.22 : 0.08);
-                    ctx.fillStyle = edge ? lineColor : isLand ? landColor : oceanColor;
+        /* Latitude and longitude to a point on a unit sphere */
+        function xyz(lat, lon) {
+            const cl = Math.cos(lat * RAD);
+            return [cl * Math.sin(lon * RAD), Math.sin(lat * RAD), cl * Math.cos(lon * RAD)];
+        }
+
+        /* Turns the sphere so the chosen centre point faces the screen */
+        function toView(x, y, z) {
+            const a = globe.lon0 * RAD, b = globe.lat0 * RAD;
+            const x1 = x * Math.cos(a) - z * Math.sin(a);
+            const z1 = x * Math.sin(a) + z * Math.cos(a);
+            return [x1, y * Math.cos(b) - z1 * Math.sin(b), y * Math.sin(b) + z1 * Math.cos(b)];
+        }
+
+        function angularDistance(lat1, lon1, lat2, lon2) {
+            const a = xyz(lat1, lon1), b = xyz(lat2, lon2);
+            return Math.acos(clamp(a[0] * b[0] + a[1] * b[1] + a[2] * b[2], -1, 1)) / RAD;
+        }
+
+        function formatCoords(lat, lon) {
+            return Math.abs(lat).toFixed(1) + '\u00B0' + (lat >= 0 ? 'N' : 'S') + ', ' +
+                Math.abs(lon).toFixed(1) + '\u00B0' + (lon >= 0 ? 'E' : 'W');
+        }
+
+        /* A grid of dots covering the planet, with fewer dots near the poles */
+        function buildGlobeDots() {
+            const dots = [];
+            for (let k = 0; k < 72; k++) {
+                const lat = 88.75 - k * STEP;
+                const count = Math.max(1, Math.round(COLS * Math.cos(lat * RAD)));
+                for (let i = 0; i < count; i++) {
+                    const lon = -180 + (i + 0.5) * 360 / count;
+                    let land = false;
+                    if (k >= 2 && k <= 58) {
+                        const col = Math.min(COLS - 1, Math.floor((lon + 180) / STEP));
+                        land = LAND[(k - 2) * COLS + col] === 1;
+                    } else if (lat < -68) {
+                        land = true;
+                    }
+                    const p = xyz(lat, lon);
+                    dots.push({ x: p[0], y: p[1], z: p[2], land: land });
+                }
+            }
+            globe.dots = dots;
+        }
+
+        /* The moment the globe shows: right now, or the planner's chosen time */
+        function globeTime() {
+            return globe.mode === 'planner'
+                ? new Date(anchorBase() + plannerMinutes * 60000)
+                : new Date();
+        }
+
+        /* Where the sun is directly overhead at a given moment */
+        function sunPosition(date) {
+            const startOfYear = Date.UTC(date.getUTCFullYear(), 0, 0);
+            const today = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+            const dayOfYear = (today - startOfYear) / 86400000;
+            const dec = -23.44 * Math.cos(2 * Math.PI / 365 * (dayOfYear + 10));
+            const hours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
+            let lon = (12 - hours) * 15;
+            if (lon > 180) lon -= 360;
+            if (lon < -180) lon += 360;
+            const v = xyz(dec, lon);
+            return { lat: dec, lon: lon, x: v[0], y: v[1], z: v[2] };
+        }
+
+        function globePalette() {
+            if (root.classList.contains('dark')) {
+                return {
+                    sphereA: '#1a2536', sphereB: '#080b11', glow: 'rgba(59,130,246,0.35)',
+                    landDay: '#b8c8e2', landNight: '#4a5d82', seaDay: '#4f6d9c', seaNight: '#222f47', edge: '#f4b546',
+                    line: 'rgba(130,160,210,0.16)', muted: 'rgba(170,185,210,0.75)', ink: '#e8edf4',
+                    labelBg: 'rgba(8,11,17,0.86)', labelLine: 'rgba(255,255,255,0.14)',
+                    sunLight: 'rgba(244,181,70,0.20)', sunLightEnd: 'rgba(244,181,70,0)',
+                    dayPin: '#f4b546', nightPin: '#818cf8'
+                };
+            }
+            return {
+                sphereA: '#eef3fb', sphereB: '#c9d6ea', glow: 'rgba(37,99,235,0.25)',
+                landDay: '#1f3252', landNight: '#9fb0cd', seaDay: '#6f8bb8', seaNight: '#c3cfe3', edge: '#d9820a',
+                line: 'rgba(30,50,90,0.16)', muted: '#556071', ink: '#121a26',
+                labelBg: 'rgba(255,255,255,0.92)', labelLine: 'rgba(15,25,40,0.18)',
+                sunLight: 'rgba(244,181,70,0.30)', sunLightEnd: 'rgba(244,181,70,0)',
+                dayPin: '#d9820a', nightPin: '#4f46a5'
+            };
+        }
+
+        function roundedRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        function drawGlobe() {
+            const g = globe, ctx = g.ctx;
+            if (!ctx || !g.w) return;
+            const pal = globePalette();
+            const w = g.w, h = g.h, R = g.r, cx = w / 2, cy = h / 2;
+            const when = globeTime();
+            const sun = sunPosition(when);
+
+            ctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
+            ctx.clearRect(0, 0, w, h);
+
+            /* Planet body with a soft blue glow around the edge */
+            const body = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
+            body.addColorStop(0, pal.sphereA);
+            body.addColorStop(1, pal.sphereB);
+            ctx.save();
+            ctx.shadowColor = pal.glow;
+            ctx.shadowBlur = 28;
+            ctx.fillStyle = body;
+            ctx.beginPath();
+            ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            ctx.clip();
+
+            /* Warm light spreading out from the point under the sun */
+            const sv = toView(sun.x, sun.y, sun.z);
+            if (sv[2] > -0.3) {
+                const sx = cx + R * sv[0], sy = cy - R * sv[1];
+                const light = ctx.createRadialGradient(sx, sy, 0, sx, sy, R * 1.25);
+                light.addColorStop(0, pal.sunLight);
+                light.addColorStop(1, pal.sunLightEnd);
+                ctx.fillStyle = light;
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            /* Dots: land and sea, lit or dark, plus the sunrise and sunset line */
+            const spacing = R * STEP * RAD;
+            const paths = {
+                seaNight: new Path2D(), seaDay: new Path2D(),
+                landNight: new Path2D(), landDay: new Path2D(), edge: new Path2D()
+            };
+            const ca = Math.cos(g.lon0 * RAD), sa = Math.sin(g.lon0 * RAD);
+            const cb = Math.cos(g.lat0 * RAD), sb = Math.sin(g.lat0 * RAD);
+            for (const d of g.dots) {
+                const z1 = d.x * sa + d.z * ca;
+                const z2 = d.y * sb + z1 * cb;
+                if (z2 <= 0.03) continue;
+                const x1 = d.x * ca - d.z * sa;
+                const y2 = d.y * cb - z1 * sb;
+                const lit = d.x * sun.x + d.y * sun.y + d.z * sun.z;
+                let key;
+                if (Math.abs(lit) < 0.045) key = 'edge';
+                else if (d.land) key = lit > 0 ? 'landDay' : 'landNight';
+                else key = lit > 0 ? 'seaDay' : 'seaNight';
+                const radius = spacing * (d.land ? 0.34 : 0.2) * (0.4 + 0.6 * z2);
+                const px = cx + R * x1, py = cy - R * y2;
+                paths[key].moveTo(px + radius, py);
+                paths[key].arc(px, py, radius, 0, Math.PI * 2);
+            }
+            ctx.fillStyle = pal.seaNight;  ctx.fill(paths.seaNight);
+            ctx.fillStyle = pal.seaDay;    ctx.fill(paths.seaDay);
+            ctx.fillStyle = pal.landNight; ctx.fill(paths.landNight);
+            ctx.fillStyle = pal.landDay;   ctx.fill(paths.landDay);
+            ctx.fillStyle = pal.edge;      ctx.fill(paths.edge);
+
+            /* Lines every 15 degrees of longitude, one per hour of time */
+            if (g.lines) {
+                ctx.strokeStyle = pal.line;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let lon = -180; lon < 180; lon += 15) {
+                    let pen = false;
+                    for (let lat = -84; lat <= 84; lat += 6) {
+                        const p = xyz(lat, lon), v = toView(p[0], p[1], p[2]);
+                        if (v[2] > 0) {
+                            const px = cx + R * v[0], py = cy - R * v[1];
+                            if (pen) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+                            pen = true;
+                        } else {
+                            pen = false;
+                        }
+                    }
+                }
+                ctx.stroke();
+
+                ctx.fillStyle = pal.muted;
+                ctx.font = '10px "JetBrains Mono", "Space Grotesk", monospace';
+                ctx.textAlign = 'center';
+                for (let lon = -180; lon < 180; lon += 15) {
+                    const p = xyz(0, lon), v = toView(p[0], p[1], p[2]);
+                    if (v[2] > 0.3) {
+                        const n = lon / 15;
+                        ctx.fillText(n === -12 ? '\u00B112' : (n > 0 ? '+' : '') + n, cx + R * v[0], cy - R * v[1] - 5);
+                    }
+                }
+            }
+            ctx.restore();
+
+            /* The point directly under the sun */
+            if (sv[2] > 0) {
+                const sx = cx + R * sv[0], sy = cy - R * sv[1];
+                ctx.save();
+                ctx.shadowColor = pal.edge;
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = pal.edge;
+                ctx.beginPath();
+                ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                ctx.fillStyle = pal.ink;
+                ctx.font = LABEL_FONT;
+                ctx.textAlign = 'left';
+                ctx.fillText('Sun overhead', sx + 14, sy + 4);
+            }
+
+            /* Pins for each zone on the board */
+            g.pins = [];
+            ctx.font = LABEL_FONT;
+            activeZones.forEach(id => {
+                const c = COORDS[id];
+                if (!c) return;
+                const p = xyz(c[0], c[1]), v = toView(p[0], p[1], p[2]);
+                if (v[2] <= 0.08) return;
+                const px = cx + R * v[0], py = cy - R * v[1];
+                const lit = p[0] * sun.x + p[1] * sun.y + p[2] * sun.z > 0;
+                const chosen = g.selected && g.selected.id === id;
+                g.pins.push({ id: id, x: px, y: py, lit: lit, side: px > cx + R * 0.45 ? 'left' : 'right' });
+                ctx.fillStyle = lit ? pal.dayPin : pal.nightPin;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.arc(px, py, chosen ? 14 : 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.beginPath();
+                ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = pal.ink;
+                ctx.lineWidth = chosen ? 2 : 1.2;
+                ctx.stroke();
+            });
+
+            /* Labels with the local time, skipping any that would overlap */
+            const boxes = [];
+            g.pins.forEach(pin => {
+                const text = zoneInfo(pin.id).city + '  ' + fmtTime(when, pin.id);
+                const bw = ctx.measureText(text).width + 28, bh = 24;
+                const bx = pin.side === 'right' ? pin.x + 12 : pin.x - 12 - bw;
+                const by = pin.y - bh / 2;
+                const clash = boxes.some(b => bx < b.x + b.w + 3 && bx + bw + 3 > b.x && by < b.y + b.h + 3 && by + bh + 3 > b.y);
+                if (clash) return;
+                boxes.push({ x: bx, y: by, w: bw, h: bh });
+                roundedRect(ctx, bx, by, bw, bh, 12);
+                ctx.fillStyle = pal.labelBg;
+                ctx.fill();
+                ctx.strokeStyle = pal.labelLine;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.fillStyle = pin.lit ? pal.dayPin : pal.nightPin;
+                ctx.beginPath();
+                ctx.arc(bx + 12, by + bh / 2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = pal.ink;
+                ctx.textAlign = 'left';
+                ctx.fillText(text, bx + 21, by + bh / 2 + 4);
+            });
+
+            /* Marker for a spot picked on open land or sea */
+            const s = g.selected;
+            if (s && !g.pins.some(p => p.id === s.id)) {
+                const p = xyz(s.lat, s.lon), v = toView(p[0], p[1], p[2]);
+                if (v[2] > 0.05) {
+                    ctx.strokeStyle = pal.ink;
+                    ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.arc((c + 0.5) / COLS * w, y, isLand ? dot * 1.15 : dot * 0.8, 0, Math.PI * 2);
+                    ctx.arc(cx + R * v[0], cy - R * v[1], 9, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = pal.ink;
+                    ctx.beginPath();
+                    ctx.arc(cx + R * v[0], cy - R * v[1], 2.5, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
 
-            /* City pins for the active zones */
-            ctx.globalAlpha = 1;
-            ctx.font = '500 11px "JetBrains Mono", monospace';
-            activeZones.forEach(id => {
-                const pos = COORDS[id];
-                if (!pos) return;
-                const x = (pos[1] + 180) / 360 * w;
-                const y = (TOP_LAT - pos[0]) / SPAN * h;
-                ctx.fillStyle = '#3b82f6';
-                ctx.globalAlpha = 0.3;
-                ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
-                ctx.globalAlpha = 1;
-                ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = textColor;
-                const flip = x > w * 0.85;
-                ctx.textAlign = flip ? 'right' : 'left';
-                ctx.fillText(zoneInfo(id).city, x + (flip ? -10 : 10), y + 4);
+            const note = $('globe-sun-note');
+            if (note) note.textContent = 'The sun is directly overhead at ' + formatCoords(sun.lat, sun.lon);
+        }
+
+        /* ----- Picking a place ----- */
+        function nearestCity(lat, lon, maxDegrees) {
+            let best = null, bestDistance = maxDegrees;
+            Object.keys(COORDS).forEach(id => {
+                const d = angularDistance(lat, lon, COORDS[id][0], COORDS[id][1]);
+                if (d < bestDistance) { bestDistance = d; best = id; }
             });
+            return best;
+        }
+
+        function selectGlobePoint(lat, lon, id, focus) {
+            const g = globe;
+            if (!id) id = nearestCity(lat, lon, 4);
+            if (id && COORDS[id]) { lat = COORDS[id][0]; lon = COORDS[id][1]; }
+            g.selected = { lat: lat, lon: lon, id: id || null };
+            if (focus) {
+                faceGlobeTo(lat, lon);
+                g.spin = false;
+                syncGlobeButtons();
+            }
+            g.lastPanel = 0;
+            g.needsDraw = true;
+        }
+
+        function faceGlobeTo(lat, lon) {
+            const g = globe;
+            const target = { lat: clamp(lat, -55, 55), lon: lon };
+            if (reduceMotion) {
+                g.lat0 = target.lat;
+                g.lon0 = target.lon;
+            } else {
+                g.target = target;
+            }
+            g.needsDraw = true;
+        }
+
+        function globePointAt(px, py) {
+            const g = globe;
+            const hit = g.pins.find(p => Math.hypot(p.x - px, p.y - py) < 14);
+            if (hit) return { id: hit.id };
+            const x = (px - g.w / 2) / g.r, y = (g.h / 2 - py) / g.r;
+            const d2 = x * x + y * y;
+            if (d2 > 1) return null;
+            const z2 = Math.sqrt(1 - d2);
+            const a = g.lon0 * RAD, b = g.lat0 * RAD;
+            const yy = y * Math.cos(b) + z2 * Math.sin(b);
+            const z1 = -y * Math.sin(b) + z2 * Math.cos(b);
+            const xx = x * Math.cos(a) + z1 * Math.sin(a);
+            const zz = -x * Math.sin(a) + z1 * Math.cos(a);
+            return { lat: Math.asin(clamp(yy, -1, 1)) / RAD, lon: Math.atan2(xx, zz) / RAD };
+        }
+
+        /* ----- Side panel ----- */
+        function updateGlobePanel() {
+            const s = globe.selected;
+            if (!s || !$('gp-name')) return;
+            const when = globeTime();
+            const sun = sunPosition(when);
+            const p = xyz(s.lat, s.lon);
+            const altitude = Math.asin(clamp(p[0] * sun.x + p[1] * sun.y + p[2] * sun.z, -1, 1)) / RAD;
+
+            let name, sub, time, date, offset, working;
+            if (s.id) {
+                const z = zoneInfo(s.id);
+                name = z.city;
+                sub = z.sub;
+                time = fmtTime(when, s.id, true);
+                date = fmtDate(when, s.id);
+                offset = fmtOffset(offsetMinutes(s.id, when));
+                working = isWorking(minuteOfDay(when, s.id)) ? 'Inside working hours' : 'Outside working hours';
+            } else {
+                const solar = new Date(when.getTime() + s.lon / 15 * 3600000);
+                const n = Math.round(s.lon / 15);
+                name = 'Open location';
+                sub = formatCoords(s.lat, s.lon);
+                time = fmtTime(solar, 'UTC', true);
+                date = fmtDate(solar, 'UTC');
+                offset = 'About UTC' + (n >= 0 ? '+' : '') + n;
+                working = 'Not a listed city';
+            }
+
+            let status, badge;
+            if (altitude > 0) {
+                status = 'Daytime';
+                badge = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+            } else if (altitude > -6) {
+                status = 'Twilight';
+                badge = 'bg-orange-500/10 text-amber-400 border-orange-500/30';
+            } else {
+                status = 'Night';
+                badge = 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30';
+            }
+
+            $('gp-mode').textContent = globe.mode === 'planner'
+                ? 'Showing planner time (' + fmtClock(plannerMinutes) + ' in ' + zoneInfo(activeZones[0]).city + ')'
+                : 'Showing live time';
+            $('gp-name').textContent = name;
+            $('gp-sub').textContent = sub;
+            $('gp-time').textContent = time;
+            $('gp-date').textContent = date;
+            $('gp-offset').textContent = offset;
+            $('gp-work').textContent = working;
+            $('gp-badge').className = 'inline-block px-3 py-1 rounded-full text-xs font-mono font-medium border ' + badge;
+            $('gp-badge').textContent = status;
+            $('gp-sun').textContent = Math.abs(altitude).toFixed(0) + '\u00B0 ' + (altitude >= 0 ? 'above' : 'below') + ' the horizon';
+
+            const add = $('gp-add');
+            const addable = s.id && !activeZones.includes(s.id);
+            add.classList.toggle('hidden', !addable);
+            if (addable) add.textContent = 'Add ' + zoneInfo(s.id).city + ' to my board';
+        }
+
+        function addGlobeZone() {
+            const s = globe.selected;
+            if (!s || !s.id || activeZones.includes(s.id)) return;
+            activeZones.push(s.id);
+            saveZones();
+            renderAll();
+            globe.lastPanel = 0;
+        }
+
+        function syncGlobeButtons() {
+            const g = globe;
+            $('gb-live').classList.toggle('on', g.mode === 'live');
+            $('gb-planner').classList.toggle('on', g.mode === 'planner');
+            $('gb-spin').classList.toggle('on', g.spin);
+            $('gb-lines').classList.toggle('on', g.lines);
+        }
+
+        /* ----- Size, loop and events ----- */
+        function sizeGlobe() {
+            const g = globe;
+            if (!g.canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const w = g.canvas.clientWidth, h = g.canvas.clientHeight;
+            if (!w || !h) return;
+            if (w !== g.w || h !== g.h || dpr !== g.dpr) {
+                g.w = w;
+                g.h = h;
+                g.dpr = dpr;
+                g.canvas.width = Math.round(w * dpr);
+                g.canvas.height = Math.round(h * dpr);
+            }
+            g.r = Math.min(w, h) / 2 - 22;
+            g.needsDraw = true;
+            g.lastPanel = 0;
+        }
+
+        /* Other parts of the page call this when something changes */
+        function drawMap() {
+            sizeGlobe();
+        }
+
+        function globeFrame(ts) {
+            requestAnimationFrame(globeFrame);
+            const g = globe;
+            if (!g.ctx || !g.visible || document.hidden) return;
+            const dt = Math.min(0.05, (ts - g.lastFrame) / 1000 || 0);
+            g.lastFrame = ts;
+
+            let moving = !!g.drag;
+            if (g.target) {
+                const dLon = ((g.target.lon - g.lon0 + 540) % 360) - 180;
+                const dLat = g.target.lat - g.lat0;
+                g.lon0 += dLon * 0.14;
+                g.lat0 += dLat * 0.14;
+                if (Math.abs(dLon) < 0.2 && Math.abs(dLat) < 0.2) g.target = null;
+                moving = true;
+            } else if (g.spin && !g.drag && !reduceMotion) {
+                g.lon0 -= 5 * dt;
+                moving = true;
+            }
+            if (g.lon0 > 180) g.lon0 -= 360;
+            if (g.lon0 < -180) g.lon0 += 360;
+
+            if (!moving && !g.needsDraw && ts - g.lastDraw < 1000) return;
+            g.needsDraw = false;
+            g.lastDraw = ts;
+            drawGlobe();
+            if (ts - g.lastPanel > 500) {
+                g.lastPanel = ts;
+                updateGlobePanel();
+            }
+        }
+
+        function initGlobe() {
+            const g = globe;
+            g.canvas = $('globe');
+            if (!g.canvas) return;
+            g.ctx = g.canvas.getContext('2d');
+            g.spin = !reduceMotion;
+            buildGlobeDots();
+            sizeGlobe();
+
+            const home = activeZones[0];
+            if (COORDS[home]) {
+                g.lon0 = COORDS[home][1];
+                g.lat0 = clamp(COORDS[home][0], -40, 40);
+                selectGlobePoint(COORDS[home][0], COORDS[home][1], home, false);
+            }
+            syncGlobeButtons();
+
+            const canvas = g.canvas;
+            const localPoint = e => {
+                const rect = canvas.getBoundingClientRect();
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            };
+
+            canvas.addEventListener('pointerdown', e => {
+                canvas.setPointerCapture(e.pointerId);
+                g.target = null;
+                g.drag = { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: false };
+                canvas.style.cursor = 'grabbing';
+            });
+
+            canvas.addEventListener('pointermove', e => {
+                if (g.drag) {
+                    const perPixel = (180 / Math.PI) / g.r;
+                    g.lon0 -= (e.clientX - g.drag.x) * perPixel;
+                    g.lat0 = clamp(g.lat0 + (e.clientY - g.drag.y) * perPixel, -80, 80);
+                    g.drag.x = e.clientX;
+                    g.drag.y = e.clientY;
+                    if (Math.hypot(e.clientX - g.drag.startX, e.clientY - g.drag.startY) > 4) g.drag.moved = true;
+                    g.needsDraw = true;
+                } else {
+                    const pt = localPoint(e);
+                    canvas.style.cursor = g.pins.some(p => Math.hypot(p.x - pt.x, p.y - pt.y) < 14) ? 'pointer' : 'grab';
+                }
+            });
+
+            canvas.addEventListener('pointerup', e => {
+                const drag = g.drag;
+                g.drag = null;
+                canvas.style.cursor = 'grab';
+                if (!drag || drag.moved) return;
+                const pt = localPoint(e);
+                const found = globePointAt(pt.x, pt.y);
+                if (found) selectGlobePoint(found.lat, found.lon, found.id, true);
+            });
+
+            canvas.addEventListener('pointercancel', () => {
+                g.drag = null;
+                canvas.style.cursor = 'grab';
+            });
+
+            $('gb-live').addEventListener('click', () => { g.mode = 'live'; syncGlobeButtons(); g.needsDraw = true; g.lastPanel = 0; });
+            $('gb-planner').addEventListener('click', () => { g.mode = 'planner'; syncGlobeButtons(); g.needsDraw = true; g.lastPanel = 0; });
+            $('gb-spin').addEventListener('click', () => { g.spin = !g.spin; g.target = null; syncGlobeButtons(); });
+            $('gb-lines').addEventListener('click', () => { g.lines = !g.lines; syncGlobeButtons(); g.needsDraw = true; });
+            $('gb-sun').addEventListener('click', () => {
+                const sun = sunPosition(globeTime());
+                faceGlobeTo(sun.lat, sun.lon);
+                g.spin = false;
+                syncGlobeButtons();
+            });
+            $('gb-home').addEventListener('click', () => {
+                const id = activeZones[0];
+                if (COORDS[id]) selectGlobePoint(COORDS[id][0], COORDS[id][1], id, true);
+            });
+            $('gp-add').addEventListener('click', addGlobeZone);
+
+            if ('ResizeObserver' in window) new ResizeObserver(sizeGlobe).observe(canvas);
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver(entries => {
+                    g.visible = entries[0].isIntersecting;
+                    if (g.visible) g.needsDraw = true;
+                }).observe(canvas);
+            }
+
+            requestAnimationFrame(globeFrame);
         }
 
         /* ===================== Theme ===================== */
@@ -1097,7 +1669,8 @@
             renderAll();
             initConverterDefaults();
 
-            enableSort($('zones-grid'));
+            initGlobe();
+			enableSort($('zones-grid'));
             enableSort($('planner-rows'));
 
             $('theme-btn').addEventListener('click', () => setTheme(root.classList.contains('dark') ? 'light' : 'dark'));
