@@ -4,7 +4,7 @@ Chronos is a world time zone planner that keeps live clocks, a day and night map
 
 **[Live Demo](https://crypticot.github.io/chronos/)**
 
-![Chronos](og-image.png)
+![Chronos](chronos.png)
 
 ---
 
